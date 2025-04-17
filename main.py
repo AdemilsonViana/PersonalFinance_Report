@@ -10,7 +10,7 @@ from Functions.Charts.simple_charts import interactive_stacked_bar_chart
 #%% ----------------------------------------------
 #straemlit config
 st.set_page_config(page_title="Personal Finance Report", layout="wide")
-st.title('Workload Report')
+st.title('Personal Finance Report')
 
 # Adicionar botão de atualização
 if st.button('🔄 Atualizar Dados'):
