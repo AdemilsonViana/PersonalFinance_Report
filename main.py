@@ -57,8 +57,32 @@ groupby_gastos_mes = df.groupby(['ano_mes', 'tipo_gasto'])['valor'].sum().reset_
 
 #%% ----------------------------------------------
 # streamlit
-st.dataframe(df, hide_index=True)
+st.sidebar.header('Filters')
 
-st.subheader('Gráfico Interativo de Gastos por Tipo')
-fig = interactive_stacked_bar_chart(groupby_gastos_mes, x='ano_mes', y='valor', legend='tipo_gasto')
+# Filtro de ano (multiselect)
+anos_disponiveis = ["Todos"] + sorted(df['ano_fatura'].unique().tolist())
+anos_selecionados = st.sidebar.multiselect('Selecione o(s) Ano(s)', anos_disponiveis, default="Todos")
+
+# Filtro de mês (multiselect)
+meses_disponiveis = ["Todos"] + sorted(df['mes_fatura'].unique().tolist())
+meses_selecionados = st.sidebar.multiselect('Selecione o(s) Mês(es)', meses_disponiveis, default="Todos")
+
+# Aplicar os filtros no dataframe groupby_gastos_mes
+if "Todos" in anos_selecionados:
+    anos_filtrados = groupby_gastos_mes['ano_mes'].str[:4].astype(int).unique()
+else:
+    anos_filtrados = anos_selecionados
+
+if "Todos" in meses_selecionados:
+    meses_filtrados = groupby_gastos_mes['ano_mes'].str[-2:].astype(int).unique()
+else:
+    meses_filtrados = meses_selecionados
+
+filtered_data = groupby_gastos_mes[
+    (groupby_gastos_mes['ano_mes'].str[:4].astype(int).isin(anos_filtrados)) &
+    (groupby_gastos_mes['ano_mes'].str[-2:].astype(int).isin(meses_filtrados))
+]
+
+# Atualizar o gráfico com os dados filtrados
+fig = interactive_stacked_bar_chart(filtered_data, x='ano_mes', y='valor', legend='tipo_gasto')
 st.plotly_chart(fig, use_container_width=True)
