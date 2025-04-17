@@ -3,9 +3,9 @@
 #streamlit run main.py
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
 
 from Functions.APIs.notion import API_Notion
+from Functions.Charts.simple_charts import interactive_stacked_bar_chart
 
 #%% ----------------------------------------------
 #straemlit config
@@ -47,21 +47,18 @@ df['ano_fatura'] = df['ano_fatura'].astype(int)
 df['data'] = pd.to_datetime(df['data'], format='%Y-%m-%d')
 df['tipo_gasto'] = df['tipo_gasto'].astype(str)
 df['valor'] = df['valor'].astype(float)
-    # criar a coluna de ano e mês
-df['ano_mes'] = df['data'].dt.to_period('M')
+    # criar a coluna de ano e mês (ano-mes)
+df['ano_mes'] = df['ano_fatura'].astype(str) + '-' + df['mes_fatura'].astype(str).str.zfill(2)
 
 #%% ----------------------------------------------
 # charts
-# gráfico de barras empilhadas tipo_gasto por ano_mes
-groupby_gastos_mes = df.groupby(['ano_mes', 'tipo_gasto'], as_index=False)['valor'].sum()
+# tabela auxiliar para gráfico ano_mes por tipo
+groupby_gastos_mes = df.groupby(['ano_mes', 'tipo_gasto'])['valor'].sum().reset_index()
 
-pivot_gastos_mes = groupby_gastos_mes.pivot(index='ano_mes', columns='tipo_gasto', values='valor').fillna(0)
-
-pivot_gastos_mes.index = pivot_gastos_mes.index.astype(str)
 #%% ----------------------------------------------
 # streamlit
 st.dataframe(df, hide_index=True)
 
-#grafico de barras empilhadas tipo_gasto por ano_mes
-st.subheader('Gastos por Tipo de Gasto')
-st.bar_chart(pivot_gastos_mes, use_container_width=True)
+st.subheader('Gráfico Interativo de Gastos por Tipo')
+fig = interactive_stacked_bar_chart(groupby_gastos_mes, x='ano_mes', y='valor', legend='tipo_gasto')
+st.plotly_chart(fig, use_container_width=True)
