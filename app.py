@@ -8,8 +8,8 @@ from Functions.APIs.notion import API_Notion
 app = Flask(__name__)
 
 # Defina suas credenciais manualmente por enquanto
-NOTION_DATASET_ID = os.environ.get('NOTION_DATASET_ID', '281707d290f94fc8a4181001c19764e2')
-NOTION_TOKEN = os.environ.get('NOTION_TOKEN', 'secret_wYb1plG31lhuYkJGaRLlCazU4H8GTpVcFON05ehaNjN')
+NOTION_DATASET_ID = os.environ['NOTION_DATASET_ID']
+NOTION_TOKEN = os.environ['NOTION_TOKEN']
 
 
 def extrair_tratar_dados(dataset_id, token, data_inicio=None, data_fim=None, data=None, ano_mes=None):
