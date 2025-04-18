@@ -12,7 +12,7 @@ NOTION_DATASET_ID = os.environ['NOTION_DATASET_ID']
 NOTION_TOKEN = os.environ['NOTION_TOKEN']
 
 
-def extrair_tratar_dados(dataset_id, token, data_inicio=None, data_fim=None, data=None, ano_mes=None):
+def extrair_tratar_dados(dataset_id, token, ano_mes=None, ano_fatura=None):
     df = API_Notion(dataset_id, token)
 
     # Normalização e tratamento
@@ -43,27 +43,21 @@ def extrair_tratar_dados(dataset_id, token, data_inicio=None, data_fim=None, dat
     df['ano_mes'] = df['ano_fatura'].astype(str) + '-' + df['mes_fatura'].astype(str).str.zfill(2)
 
     # Aplicar os filtros opcionais
-    if data_inicio:
-        df = df[df['data'] >= pd.to_datetime(data_inicio)]
-    if data_fim:
-        df = df[df['data'] <= pd.to_datetime(data_fim)]
-    if data:
-        df = df[df['data'] == pd.to_datetime(data)]
     if ano_mes:
         df = df[df['ano_mes'] == ano_mes]
+    if ano_fatura:
+        df = df[df['ano_fatura'] == int(ano_fatura)]
 
     return df
 
 @app.route('/gastos', methods=['POST'])
 def gastos():
     body = request.get_json()
-    data_inicio = body.get('data_inicio')
-    data_fim = body.get('data_fim')
-    data = body.get('data')
     ano_mes = body.get('ano_mes')
+    ano_fatura = body.get('ano_fatura')
 
     try:
-        df = extrair_tratar_dados(NOTION_DATASET_ID, NOTION_TOKEN, data_inicio, data_fim, data, ano_mes)
+        df = extrair_tratar_dados(NOTION_DATASET_ID, NOTION_TOKEN, ano_mes, ano_fatura)
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
@@ -71,4 +65,6 @@ def gastos():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(host='0.0.0.0', port=10000) # Para produção
+    # app.run(debug=True) # Para desenvolvimento
+
