@@ -86,3 +86,33 @@ filtered_data = groupby_gastos_mes[
 # Atualizar o gráfico com os dados filtrados
 fig = interactive_stacked_bar_chart(filtered_data, x='ano_mes', y='valor', legend='tipo_gasto')
 st.plotly_chart(fig, use_container_width=True)
+
+# tabela de distribuição de tipo de gasto 
+# Aplicar os filtros no dataframe df
+if "Todos" in anos_selecionados:
+    anos_filtrados_df = df['ano_fatura'].unique()
+else:
+    anos_filtrados_df = anos_selecionados
+
+if "Todos" in meses_selecionados:
+    meses_filtrados_df = df['mes_fatura'].unique()
+else:
+    meses_filtrados_df = meses_selecionados
+
+filtered_data_df = df[
+    (df['ano_fatura'].isin(anos_filtrados_df)) &
+    (df['mes_fatura'].isin(meses_filtrados_df))
+]
+
+# Atualizar a tabela dinâmica com os dados filtrados
+st.divider()
+st.header('Distribuição por tipo de gosto')
+pivot_table = pd.crosstab(
+    index=filtered_data_df['ano_mes'],  # tipo de gasto → linhas
+    columns=filtered_data_df['tipo_gasto'],  # ano e mês → colunas
+    values=filtered_data_df['valor'],  # valores numéricos
+    aggfunc='sum',  # soma dos valores
+    normalize='index',  # use True se quiser proporções
+    margins=True
+)
+st.dataframe(pivot_table)
